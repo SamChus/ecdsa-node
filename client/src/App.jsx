@@ -52,6 +52,20 @@ async function importPasswordKey(password) {
   );
 }
 
+// Encrypt and store the mnemonic (seed phrase) in localStorage
+async function backupSeedPhrase(mnemonic, password) {
+  const iv = crypto.getRandomValues(new Uint8Array(16));
+  const key = await importPasswordKey(password);
+  const mnemonicBytes = new TextEncoder().encode(mnemonic);
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-CBC", iv },
+    key,
+    mnemonicBytes
+  );
+  localStorage.setItem(MNEMONIC_STORAGE_KEY, bytesToHex(new Uint8Array(ciphertext)));
+  localStorage.setItem(MNEMONIC_IV_STORAGE_KEY, bytesToHex(iv));
+}
+
 function App() {
   const [wallet, setWallet] = useState(null);
   const [restorationMessage, setRestorationMessage] = useState("");
